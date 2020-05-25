@@ -1,5 +1,5 @@
 # ocp4_kvm_ansible
-This playbook(s) will install OCP4 "any minor versions" on a KVM environment.
+This Ansible playbook will install OCP4 "any minor versions" on a KVM environment.
 
 # Lab Environment, I have tested the playbooks on:
 - Lenovo Thinkpad P70 Laptop
