@@ -127,17 +127,24 @@ delete_downloads: false
 # Which playbook to run:
 - There are two main playbooks [tart_point.yaml and destroy.yaml], and you can use them as follows:
 - start_point.yaml [Interactive way]:
-  - # ansible-playbook start_point.yaml
-    - The playbook will list the avilabl OCP4 minor and micro versions to select from it manually before it proceeds installing the cluster componenets.
+```
+# ansible-playbook start_point.yaml
+- The playbook will list the avilabl OCP4 minor and micro versions to select from it manually before it proceeds installing the cluster componenets.
+```
 - start_point.yaml [Automatic way]:
-  - # ansible-playbook start_point.yaml -e ocpversion=4.3.13
-    - The playbook will proceed to donwload and install the required OCP version "4.3.13 in this example".
+```
+# ansible-playbook start_point.yaml -e ocpversion=4.3.13
+- The playbook will proceed to donwload and install the required OCP version "4.3.13 in this example".
+```
 - destroy.yaml
-  - # ansible-playbook destroy.yaml
-    - Destroy "delete" all of the configured VMs and services configurations "will not delete what has been downloaded to save time"
-  - # ansible-playbook destroy.yaml -e delete_downloads=true
-    - Pass the parameter "delete_downloads=true" to also delete all of downloaded files "/var/www/html/downloads/ directoy will be deleted"
-
+```
+# ansible-playbook destroy.yaml
+- Destroy "delete" all of the configured VMs and services configurations "will not delete what has been downloaded to save time"
+```
+```
+ansible-playbook destroy.yaml -e delete_downloads=true
+- Pass the parameter "delete_downloads=true" to also delete all of downloaded files "/var/www/html/downloads/ directoy will be deleted"
+```
 # Detailed Steps:
 - Make sure your are using the "root"
 ```
