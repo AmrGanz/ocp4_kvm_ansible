@@ -1,0 +1,79 @@
+global
+  log 127.0.0.1 local2
+  chroot /var/lib/haproxy
+  pidfile /var/run/haproxy.pid
+  maxconn 4000
+  user haproxy
+  group haproxy
+  daemon
+  stats socket /var/lib/haproxy/stats
+
+defaults
+  mode tcp
+  log global
+  option tcplog
+  option dontlognull
+  option redispatch
+  retries 3
+  timeout queue 1m
+  timeout connect 10s
+  timeout client 1m
+  timeout server 1m
+  timeout check 10s
+  maxconn 3000
+
+#=========================================================================
+
+# openshift-api-server
+frontend openshift-api-server *:6443
+  default_backend openshift-api-server
+
+backend openshift-api-server
+  balance roundrobin
+  server bootstrap bootstrap.{{ cluster_name }}.{{ domain_name }}:6443 check
+{% for i in range(1, master_count+1) %}
+  server master-{{ i }} master-{{ i }}.{{ cluster_name }}.{{ domain_name }}:6443 check
+{% endfor %}
+
+#=========================================================================
+
+# machine config server
+frontend machine-config-server *:22623
+  default_backend machine-config-server
+
+backend machine-config-server
+  balance roundrobin
+  server bootstrap bootstrap.{{ cluster_name }}.{{ domain_name }}:22623 check
+{% for i in range(1, master_count+1) %}
+  server master-{{ i }} master-{{ i }}.{{ cluster_name }}.{{ domain_name }}:22623 check
+{% endfor %}
+
+#=========================================================================
+
+# ingress-http
+frontend ingress-http *:80
+  default_backend ingress-http
+
+backend ingress-http
+  balance roundrobin
+{% for i in range(1, master_count+1) %}
+  server master-{{ i }} master-{{ i }}.{{ cluster_name }}.{{ domain_name }}:80 check
+{% endfor %}
+{% for i in range(1, worker_count+1) %}
+  server worker-{{ i }} worker-{{ i }}.{{ cluster_name }}.{{ domain_name }}:80 check
+{% endfor %}
+
+#=========================================================================
+
+# ingress-https
+frontend ingress-https *:443
+  default_backend ingress-https
+
+backend ingress-https
+  balance roundrobin
+{% for i in range(1, master_count+1) %}
+  server master-{{ i }} master-{{ i }}.{{ cluster_name }}.{{ domain_name }}:443 check
+{% endfor %}
+{% for i in range(1, worker_count+1) %}
+  server worker-{{ i }} worker-{{ i }}.{{ cluster_name }}.{{ domain_name }}:443 check
+{% endfor %}

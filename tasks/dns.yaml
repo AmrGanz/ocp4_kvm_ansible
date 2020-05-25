@@ -1,0 +1,82 @@
+- name: Create custom dnsmasq configuration file
+  file:
+    path: "/etc/dnsmasq.d/{{ cluster_name }}.conf"
+    state: touch
+
+- name: Configure dnsmasq with cluster domain
+  lineinfile:
+    path: "/etc/dnsmasq.d/{{ cluster_name }}.conf"
+    line: "local=/{{ cluster_name }}.{{ domain_name }}/"
+
+- name: Add etcd records in dnsmasq config file
+  lineinfile:
+    path: "/etc/dnsmasq.d/{{ cluster_name }}.conf"
+    line: "srv-host=_etcd-server-ssl._tcp.{{ cluster_name }}.{{ domain_name }},etcd-{{ item }}.{{ cluster_name }}.{{ domain_name }},2380,0,10"
+  loop:
+    - 0
+    - 1
+    - 2
+
+- name: Create /etc/dnsmasq.d/except-interfaces.conf file
+  file:
+    path: /etc/dnsmasq.d/except-interfaces.conf
+    state: touch
+
+- name: Configuring dnsmasq with virtual network interface
+  shell: for x in $(virsh net-list --name); do virsh net-info $x | awk '/Bridge:/{print "except-interface="$2}'; done > /etc/dnsmasq.d/except-interfaces.conf
+
+
+- name: Add wild card record to dnsmaq
+  lineinfile:
+    path: "/etc/dnsmasq.d/{{ cluster_name }}.conf"
+    line: "address=/apps.{{ cluster_name }}.{{ domain_name }}/192.168.{{ network_subnet_octet }}.9"
+
+- name: Update /etc/hosts file with master nodes recored
+  lineinfile:
+    path: /etc/hosts
+    line: "192.168.{{ network_subnet_octet }}.1{{ item }} master-{{ item }}.{{ cluster_name }}.{{ domain_name }}"
+  with_sequence: "start=1 end={{ master_count }}"
+
+- name: Update /etc/hosts file with etcd records
+  lineinfile:
+    path: /etc/hosts
+    line: "192.168.{{ network_subnet_octet }}.1{{ item }} etcd-{{ item | int - 1 }}.{{ cluster_name }}.{{ domain_name }}"
+  with_sequence: "start=1 end={{ master_count }}"
+
+- name: Update /etc/hosts file with worker nodes recored
+  lineinfile:
+    path: /etc/hosts
+    line: "192.168.{{ network_subnet_octet }}.2{{ item }} worker-{{ item }}.{{ cluster_name }}.{{ domain_name }}"
+  with_sequence: "start=1 end={{ worker_count }}"
+
+- name: Update /etc/hosts file with bootstrap recored
+  lineinfile:
+    path: /etc/hosts
+    line: "192.168.{{ network_subnet_octet }}.8 bootstrap.{{ cluster_name }}.{{ domain_name }}"
+
+- name: Update /etc/hosts file with loadbalancer recored
+  lineinfile:
+    path: /etc/hosts
+    line: "192.168.{{ network_subnet_octet }}.9 lb.{{ cluster_name }}.{{ domain_name }}"
+
+- name: Update /etc/hosts file with loadbalancer "api" recored
+  lineinfile:
+    path: /etc/hosts
+    line: "192.168.{{ network_subnet_octet }}.9 api.{{ cluster_name }}.{{ domain_name }}"
+
+- name: Update /etc/hosts file with lodblanacer "api-int" recored
+  lineinfile:
+    path: /etc/hosts
+    line: "192.168.{{ network_subnet_octet }}.9 api-int.{{ cluster_name }}.{{ domain_name }}"
+
+
+- name: Add 127.0.0.1 nameserver entry to /etc/resolv.conf file
+  lineinfile:
+    path: /etc/resolv.conf
+    insertbefore: BOF
+    line: "nameserver 127.0.0.1"
+
+- name: restart dnsmasq service
+  service:
+    name: dnsmasq
+    state: restarted

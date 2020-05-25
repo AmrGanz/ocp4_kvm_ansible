@@ -1,0 +1,20 @@
+- name: Copy the XML file of the new Libvirt network for OCP VMs
+  template:
+    src: templates/network.j2
+    dest: "/usr/share/libvirt/networks/{{ cluster_name }}.xml"
+
+- name: Define the newly created Libvirt network for OCP VMs
+  virt_net:
+    command: define
+    name: "{{ cluster_name }}"
+    xml: '{{ lookup("template", "/usr/share/libvirt/networks/{{ cluster_name }}.xml") }}'
+
+- name: Make sure the newly created Libvirt network is active
+  virt_net:
+    state: active
+    name: "{{ cluster_name }}"
+
+- virt_net:
+    autostart: yes
+    name: "{{ cluster_name }}"
+

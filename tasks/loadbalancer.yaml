@@ -1,0 +1,32 @@
+- name: Copy loadbalancer qcow disk image and rename it
+  copy:
+    src: ./CentOS-7-x86_64-GenericCloud.qcow2
+    dest: '{{ vms_disks_location }}{{ cluster_name }}-loadbalancer.qcow2'
+    force: yes
+
+- name: Injecting SSH public key in loadbalancer.qcow2
+  command: "virt-customize -a {{ vms_disks_location }}{{ cluster_name }}-loadbalancer.qcow2  --ssh-inject root:file:{{ ssh_public_key_file }} --selinux-relabel"
+
+- name: Create loacbalancer VM
+  command: 'virt-install --import --name {{ cluster_name }}-loadbalancer --disk {{ vms_disks_location }}{{ cluster_name }}-loadbalancer.qcow2 --memory {{ vm_mem }} --cpu host --vcpus {{ vm_cpu }} --network network={{ cluster_name }},mac="{{ macbase }}{{ mac }}" --noreboot --noautoconsole'
+  vars:
+  - vm_cpu: "{{ loadbalancer_cpu }}"
+    vm_mem: "{{ loadbalancer_mem }}"
+    mac: 09
+
+- name: Start loadbalancer VM
+  virt:
+    name: "{{ cluster_name }}-loadbalancer"
+    state: running
+
+- name: make sure Loadblanacer VM is up
+  shell: |
+    status=1
+    while [[ $status != [0] ]]
+    do
+      virsh start --domain {{ cluster_name }}-loadbalancer &> /dev/null
+      sleep 10
+      ssh  -o StrictHostKeyChecking=no -i {{ ssh_private_key_file }} root@lb.{{ cluster_name }}.{{ domain_name }} hostname  &> /dev/null
+      status=$(echo $?)
+    done
+  ignore_errors: yes

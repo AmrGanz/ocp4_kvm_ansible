@@ -1,0 +1,13 @@
+- name: Create Bootstrap VMs
+  command: 'virt-install --name {{ cluster_name }}-bootstrap --disk path={{ vms_disks_location }}{{ cluster_name }}-bootstrap.qcow2,size={{ vm_disk }} --ram {{ vm_mem }} --cpu host --vcpus {{ vm_cpu }} --os-type linux --os-variant rhel7.0 --network network={{ cluster_name }},mac="{{ macbase }}{{ mac }}"  --noautoconsole --location /var/www/html/downloads/{{ minorversion }}/rhcos/ --extra-args "nomodeset rd.neednet=1 coreos.inst=yes coreos.inst.install_dev=vda coreos.inst.image_url=http://{{ bastion_ip }}/downloads/{{ minorversion }}/rhcos/{{ bios.stdout }} coreos.inst.ignition_url=http://{{ bastion_ip }}/downloads/{{ minorversion }}.{{ microversion }}/install_dir/{{ vm_ignition }}"'
+  vars:
+  - vm_cpu: "{{ bootstrap_cpu }}"
+    vm_mem: "{{ bootstrap_mem }}"
+    vm_disk: "{{ bootstrap_disk }}"
+    vm_ignition: "bootstrap.ign"
+    mac: 08
+
+- name: Start Bootstrap VM
+  virt:
+    state: running
+    name: "{{ cluster_name }}-bootstrap"

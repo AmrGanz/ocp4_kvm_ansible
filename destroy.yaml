@@ -1,0 +1,157 @@
+- name: Reset Envirnment
+  hosts: localhost
+  tasks:
+    - name: Include vars [TASK]
+      include_vars:
+        file: vars/cluster_variables
+      tags: vars
+
+    - name: Stop bootstrap,loadbalancer and masters VMs
+      virt:
+        state: destroyed
+        name: "{{ item }}"
+      loop:
+         - "{{ cluster_name }}-bootstrap"
+         - "{{ cluster_name }}-loadbalancer"
+         - "{{ cluster_name }}-master1"
+         - "{{ cluster_name }}-master2"
+         - "{{ cluster_name }}-master3"
+      ignore_errors: yes
+    
+    - name: Stop all of the worker VMs
+      virt:
+        state: destroyed
+        name: "{{ cluster_name }}-worker{{ item }}"
+      with_sequence: "start=1 end={{ worker_count }}"
+      ignore_errors: yes
+    
+    - name: Delete bootstrap,loadbalancer and masters VMs
+      command: 'virsh undefine --domain "{{ item }}"'
+      loop:
+         - "{{ cluster_name }}-bootstrap"
+         - "{{ cluster_name }}-loadbalancer"
+         - "{{ cluster_name }}-master1"
+         - "{{ cluster_name }}-master2"
+         - "{{ cluster_name }}-master3"
+      ignore_errors: yes
+    
+    - name: Delete all of the worker VMs
+      command: "virsh undefine --domain {{ cluster_name }}-worker{{ item }}"
+      with_sequence: "start=1 end={{ worker_count }}"
+      ignore_errors: yes
+    
+    - name: Delete bootstrap,loadbalancer and masters images from /var/lib/libvirt/images/
+      file: 
+        name: "{{ vms_disks_location }}{{ item }}.qcow2"
+        state: absent
+      loop:
+         - "{{ cluster_name }}-bootstrap"
+         - "{{ cluster_name }}-loadbalancer"
+         - "{{ cluster_name }}-master1"
+         - "{{ cluster_name }}-master2"
+         - "{{ cluster_name }}-master3"
+      ignore_errors: yes
+    
+    - name: Delete Master VMs images from {{ vms_disks_location }}
+      file: 
+        name: "{{ vms_disks_location }}{{ cluster_name }}-master{{ item }}.qcow2"
+        state: absent
+      with_sequence: "start=1 end={{ master_count }}"
+      ignore_errors: yes
+
+    - name: Delete Worker VMs images from {{ vms_disks_location }}
+      file: 
+        name: "{{ vms_disks_location }}{{ cluster_name }}-worker{{ item }}.qcow2"
+        state: absent
+      with_sequence: "start=1 end={{ worker_count }}"
+      ignore_errors: yes
+    
+    - name: Delete configured cluster network
+      virt_net:
+        state: absent
+        name: "{{ cluster_name }}"
+      ignore_errors: yes
+        
+    - name: Remove dnsmasq configurations
+      file: 
+        path: "/etc/dnsmasq.d/{{ cluster_name }}.conf"
+        state: absent
+      ignore_errors: yes
+    
+    - name: Remove cluster virtual interface from dnsmasq
+      lineinfile:
+        state: absent
+        line: "except-interface={{ cluster_name }}"
+        path: "/etc/dnsmasq.d/except-interfaces.conf"
+      ignore_errors: yes
+    
+    - name: Update /etc/hosts file with master nodes recored
+      lineinfile:
+        path: /etc/hosts
+        line: "192.168.{{ network_subnet_octet }}.1{{ item }} master-{{ item }}.{{ cluster_name }}.{{ domain_name }}"
+        state: absent
+      loop:
+        - 1
+        - 2
+        - 3
+      ignore_errors: yes
+    
+    - name: Update /etc/hosts file with etcd records
+      lineinfile:
+        path: /etc/hosts
+        line: "192.168.{{ network_subnet_octet }}.1{{ item +1 }} etcd-{{ item }}.{{ cluster_name }}.{{ domain_name }}"
+        state: absent
+      loop:
+        - 0
+        - 1
+        - 2
+      ignore_errors: yes
+    
+    - name: Update /etc/hosts file with worker nodes recored
+      lineinfile:
+        path: /etc/hosts
+        line: "192.168.{{ network_subnet_octet }}.2{{ item }} worker-{{ item }}.{{ cluster_name }}.{{ domain_name }}"
+        state: absent
+      with_sequence: "start=1 end={{ worker_count }}"
+      ignore_errors: yes
+    
+    - name: Update /etc/hosts file removing loadbalancer recored
+      lineinfile:
+        path: /etc/hosts
+        line: "192.168.{{ network_subnet_octet }}.9 lb.{{ cluster_name }}.{{ domain_name }}"
+        state: absent
+      ignore_errors: yes
+    
+    - name: Update /etc/hosts file removing loadbalancer "api" recored
+      lineinfile:
+        path: /etc/hosts
+        line: "192.168.{{ network_subnet_octet }}.9 api.{{ cluster_name }}.{{ domain_name }}"
+        state: absent
+      ignore_errors: yes
+    
+    - name: Update /etc/hosts file removing lodblanacer "api-int" recored
+      lineinfile:
+        path: /etc/hosts
+        line: "192.168.{{ network_subnet_octet }}.9 api-int.{{ cluster_name }}.{{ domain_name }}"
+        state: absent
+      ignore_errors: yes
+    
+    - name: Update /etc/hosts file removing bootstrap record
+      lineinfile:
+        path: /etc/hosts
+        line: "192.168.{{ network_subnet_octet }}.8 bootstrap.{{ cluster_name }}.{{ domain_name }}"
+        state: absent
+      ignore_errors: yes
+    
+    - name: Delete install_dir Diretory
+      file: 
+        name: "/var/www/html/downloads/{{ minorversion }}.{{ microversion }}/install_dir/"
+        state: absent
+      ignore_errors: yes
+    
+    - name: Delete downloads directory
+      file:
+        path: /var/www/html/downloads/
+        state: absent
+      when: delete_downloads|bool == true
+      ignore_errors: yes

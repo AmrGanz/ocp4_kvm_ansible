@@ -1,0 +1,75 @@
+- name: Cheking if Bootstrap VM is up
+  shell: |
+    status=1
+    while [[ $status != [0] ]]
+    do
+      virsh start --domain {{ cluster_name }}-bootstrap &> /dev/null
+      sleep 10
+      ssh  -o StrictHostKeyChecking=no -i {{ ssh_private_key_file }} core@bootstrap.{{ cluster_name }}.{{ domain_name }} hostname  &> /dev/null
+      status=$(echo $?)
+    done
+  ignore_errors: yes
+
+- name: Starting ALL of the master VMs
+  virt:
+    state: running
+    name: "{{ cluster_name }}-master{{ item }}"
+  with_sequence: "start=1 end={{ master_count }}"
+
+- name: Starting ALL of the worker VMs
+  virt:
+    state: running
+    name: "{{ cluster_name }}-worker{{ item }}"
+  with_sequence: "start=1 end={{ worker_count }}"
+
+- name: Cheking if Masters VMs are up
+  shell: |
+    status=1
+    while [[ $status != [0] ]]
+    do
+      virsh start --domain {{ cluster_name }}-master{{ item }} &> /dev/null
+      sleep 10
+      ssh  -o StrictHostKeyChecking=no -i {{ ssh_private_key_file }} core@master-{{ item }}.{{ cluster_name }}.{{ domain_name }} hostname  &> /dev/null
+      status=$(echo $?)
+    done
+  with_sequence: "start=1 end={{ master_count }}"
+  ignore_errors: yes
+
+- name: Cheking if Worker VMs are up
+  shell: |
+    status=1
+    while [[ $status != [0] ]]
+    do
+      virsh start --domain {{ cluster_name }}-worker{{ item }} &> /dev/null
+      sleep 10
+      ssh  -o StrictHostKeyChecking=no -i {{ ssh_private_key_file }} core@worker-{{ item }}.{{ cluster_name }}.{{ domain_name }} hostname  &> /dev/null
+      status=$(echo $?)
+    done
+  with_sequence: "start=1 end={{ worker_count }}"
+  ignore_errors: yes
+
+- name: OCP 4 deployment [it will retry on failure for 10 trials or till it succeeds]
+  command: "/var/www/html/downloads/{{ minorversion }}.{{ microversion }}/openshift-install --dir=/var/www/html/downloads/{{ minorversion }}.{{ microversion }}/install_dir/ wait-for bootstrap-complete"
+  retries: 10
+  register: x
+  until: x.rc ==0
+
+- name: Cluster access details
+  shell: cat /var/www/html/downloads/{{ minorversion }}.{{ microversion }}/install_dir/.openshift_install_state.json | grep *password.KubeadminPassword -A5 | grep '"Password"' | cut -d'"' -f4
+  register: kubepasswd
+
+- name: Grabbing Kubeadmin password
+  shell: cat /var/www/html/downloads/{{ minorversion }}.{{ microversion }}/install_dir/.openshift_install_state.json | grep *password.KubeadminPassword -A5 | grep '"Password"' | cut -d'"' -f4
+  register: kubepasswd
+
+- name: Cluster access details
+  debug:
+    msg:
+      - "Cluster version:           {{ minorversion }}.{{ microversion }}"
+      - "Cluster name:              {{ cluster_name }}"
+      - "Cluster domain:            {{ domain_name }}"
+      - "API URL:                   api.{{ cluster_name }}.{{ domain_name }}:6443"
+      - "Console URL:               console-openshift-console.apps.{{ cluster_name }}.{{ domain_name }}"
+      - "Kubeadmin credentials:     kubeadmin/{{ kubepasswd.stdout }}"
+      - "Cluster Auth files:        /var/www/html/downloads/{{ minorversion }}.{{ microversion }}/install_dir/auth/kubeconfig"
+      - "Certificate based access:  export KUBECONFIG=/var/www/html/downloads/{{ minorversion }}.{{ microversion }}/install_dir/auth/kubeconfig"

@@ -1,0 +1,20 @@
+- name: Install HAProxy package
+  yum:
+    name: haproxy
+    state: present
+
+- name: Copy HAProxy configurations to loadbalancer VM
+  template:
+    src: templates/haproxy_conf.j2
+    dest: /etc/haproxy/haproxy.cfg
+
+- name: Set SELinux mode to Permissive
+  selinux:
+    policy: targeted
+    state: permissive
+
+- name: Enable and restart HAProxy service
+  service:
+    name: haproxy
+    state: restarted
+    enabled: true

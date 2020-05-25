@@ -1,0 +1,70 @@
+- name: Install HTTPS,DNS and KVM packages
+  yum:
+    name: "{{ item }}"
+    state: latest
+  loop:
+    - httpd
+    - dnsmasq
+    - qemu-kvm
+    - libvirt
+    - libvirt-python
+    - libguestfs-tools
+    - virt-install
+    - libvirt-daemon-driver-network
+    - virt-manager
+
+- name: Enable required services
+  service:
+    name: "{{ item }}"
+    enabled: yes
+  loop:
+    - httpd
+    - dnsmasq
+    - libvirtd
+
+- name: Add HTTP to firewall
+  firewalld:
+    service: http
+    permanent: yes
+    state: enabled
+
+- name: Restart services
+  service:
+    name: "{{ item }}"
+    enabled: yes
+    state: restarted
+  loop:
+    - httpd
+    - dnsmasq
+    - libvirtd
+
+- name: Create /var/www/html/downloads
+  file:
+    path: /var/www/html/downloads
+    state: directory
+
+- name: Create cluster resources directories
+  file:
+    path: "/var/www/html/downloads/{{ minorversion }}/rhcos/"
+    state: directory
+
+- name: Create cluster resources directories
+  file:
+    path: "/var/www/html/downloads/{{ minorversion }}.{{ microversion }}"
+    state: directory
+
+- name: Generate SSH key pair
+  openssh_keypair:
+    path: "./ocp-ssh-key"
+  ignore_errors: yes
+
+- set_fact:
+    ssh_private_key_file: "./ocp-ssh-key"
+    ssh_public_key_file: "./ocp-ssh-key.pub"
+    
+- slurp:
+    src: "./ocp-ssh-key.pub"
+  register: ssh_public_key
+
+- set_fact:
+    ssh_public_key: "{{ ssh_public_key['content'] | b64decode  }}"

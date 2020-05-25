@@ -1,0 +1,34 @@
+- name: Restart libvertd and dnsmasq services
+  service:
+    name: "{{ item }}"
+    state: restarted
+  loop:
+     - libvirtd
+     - dnsmasq
+
+- name: sleep for 60 Seconds
+  wait_for:
+    timeout: 60
+
+- name: Start ALL of the Cluster VMs
+  virt:
+    state: running
+    name: "{{ item }}"
+  loop:
+     - bootstrap
+     - master1
+     - master2
+     - master3
+     - worker1
+     - worker2
+     - worker3
+
+- name: Before starting with OCP 4 installation check
+  pause:
+    prompt: "Check that all VMs are running AND showing the correct hostnames at the login prompt, check dnsmasq service and /etc/resolv.conf file: Press ENTER to continue"
+
+- name: OCP 4 deployment [it will retry on failure for 10 times or till it succeeds]
+  command: /var/www/html/downloads/openshift-install --dir=/var/www/html/downloads/install_dir/ wait-for bootstrap-complete
+  retries: 10
+  register: x
+  until: x.rc ==0

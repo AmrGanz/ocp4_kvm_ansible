@@ -1,0 +1,11 @@
+- name: check number of master nodes
+  fail:
+    msg: "master nodes count cannot be less than 1"
+  when:
+    - master_count < 1
+
+- name: check number of worker nodes
+  fail:
+    msg: "worker nodes count cannot be less than 1"
+  when:
+    - worker_count < 1

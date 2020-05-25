@@ -1,0 +1,19 @@
+- name: Create install_dir
+  file:
+    name: "/var/www/html/downloads/{{ minorversion }}.{{ microversion }}/install_dir/"
+    state: directory
+
+- name: Copy install-config.yaml under install_dir
+  template:
+    src: templates/install-config.yaml
+    dest: "/var/www/html/downloads/{{ minorversion }}.{{ microversion }}/install_dir/install-config.yaml"
+
+- name: Generate ignition files
+  command: "/var/www/html/downloads/{{ minorversion }}.{{ microversion }}/openshift-install create ignition-configs --dir=/var/www/html/downloads/{{ minorversion }}.{{ microversion }}/install_dir/"
+
+- name: Apply read permissions to all files
+  file:
+    path: /var/www/html/downloads/
+    state: directory
+    recurse: yes
+    mode: u=rwX,g=rX,o=rX

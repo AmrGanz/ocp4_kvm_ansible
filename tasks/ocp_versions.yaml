@@ -1,0 +1,72 @@
+- name: List OCP minor versions supported by this playbook
+  block:
+    - name: Quering available minor versions
+      shell: 'curl -s  https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/ | grep -o "4\.[0-9]" | egrep -v "4.5" | sort | uniq'
+      register: minorversions
+    - name: Listing available minor versions
+      debug:
+        var: minorversions.stdout_lines
+    - name: Asking user for the required Minor version
+      pause:
+        prompt: "Select one of the above minor versions to list available microversions"
+      register: minorversion
+    - debug:
+        msg: "You have selected minor version: {{ minorversion.user_input }}"
+    - name: Exit on wrong Minor Version selection
+      fail: 
+        msg: "worng version selection"
+      when: minorversion.user_input not in hostvars['localhost']['minorversions']['stdout_lines']
+    - name: Fetching available Micro versions
+      shell: 'curl -s  https://mirror.openshift.com/pub/openshift-v4/clients/ocp/ | grep -w \"{{ minorversion.user_input }} | egrep -o "4\.[0-9]\.[0-9]|4\.[0-9]\.[0-9][0-9]" | uniq'
+      register: microversions
+    - name: Listing available Micro versions
+      debug:
+        var: microversions.stdout_lines
+    - name: Asking user for the required Micro version
+      pause:
+        prompt: "Select one of the above Micro versions to list available microversions"
+      register: microversion
+    - debug:
+        msg: "You have selected microversion: {{ microversion.user_input }}"
+    - name: Exit on wrong Minor Version selection
+      fail: 
+        msg: "worng microversion selection"
+      when: microversion.user_input not in hostvars['localhost']['microversions']['stdout_lines']
+    - name: setting ocpversion values
+      shell: 'echo {{ microversion.user_input }} | cut -d"." -f 1-2'
+      register: X
+    - name: setting ocpversion values
+      shell: 'echo {{ microversion.user_input }} | cut -d"." -f 3'
+      register: Y
+    - set_fact:
+        minorversion: "{{ X.stdout }}"
+        microversion: "{{ Y.stdout }}"
+  when:
+    - ocpversion is not defined
+- name:
+  block:
+    - name: Manual ocpversion selection
+      debug:
+        msg: "You have manually selected ocpversion: {{ ocpversion }}"
+    - name: Grabbing available versions list
+      shell: 'for i in 4.1 4.2 4.3 4.4 ; do curl -s  https://mirror.openshift.com/pub/openshift-v4/clients/ocp/ | grep -w \"$i | egrep -o "4\.[0-9]\.[0-9]|4\.[0-9]\.[0-9][0-9]" | uniq ; done'
+      register: versions
+    - name: Checking selected version
+      block:
+        - name: "Selected version is not correct, here are the available versions to select from:"
+          debug:
+            var: versions.stdout_lines
+        - name: Please select a correct version from the above list
+          fail:
+            msg: "selected version: {{ ocpversion }} is not available"
+      when: ocpversion not in hostvars['localhost']['versions']['stdout_lines']
+    - name: setting ocpversion values
+      shell: 'echo {{ ocpversion }} | cut -d"." -f 1-2'
+      register: X
+    - name: setting ocpversion values
+      shell: 'echo {{ ocpversion }} | cut -d"." -f 3'
+      register: Y
+    - set_fact:
+        minorversion: "{{ X.stdout }}"
+        microversion: "{{ Y.stdout }}"
+  when: ocpversion is defined

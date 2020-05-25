@@ -1,0 +1,32 @@
+#=========================================================
+pullsecret: 'PASTE PULL SECRET CONTENTS HERE'
+#=========================================================
+bastion_ip: 192.168.1.142
+macbase: "80:00:00:00:00:"
+network_subnet_octet: 123
+#=========================================================
+bootstrap_cpu: 2
+bootstrap_mem: 8192
+bootstrap_disk: 50
+#=========================================================
+loadbalancer_cpu: 1
+loadbalancer_mem: 1024
+#=========================================================
+master_count: 3
+master_cpu: 4
+master_mem: 16384
+master_disk: 50
+#=========================================================
+worker_count: 3
+worker_cpu: 4
+worker_mem: 16384
+worker_disk: 50
+#=========================================================
+# Default value is "/var/lib/libvirt/images/"
+vms_disks_location: "/home/images/"
+#=========================================================
+domain_name: mydomain.com
+cluster_name: ocp44
+#=========================================================
+delete_downloads: false
+#=========================================================
