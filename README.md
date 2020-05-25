@@ -30,6 +30,7 @@ This Ansible playbook will install OCP4 "any minor version" on a KVM environment
 - libvirt-daemon-driver-network
 - virt-manager
 ```
+- And of cousre you will need to install Ansible on the bastion host :)
 
 # Variables to set before starting the playbook:
 
