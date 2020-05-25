@@ -136,13 +136,14 @@ delete_downloads: false
 # ansible-playbook start_point.yaml -e ocpversion=4.3.13
 - The playbook will proceed to donwload and install the required OCP version "4.3.13 in this example".
 ```
-- destroy.yaml
+- destroy.yaml [Destroy OCP4 cluster without deleting downloaded files]
 ```
 # ansible-playbook destroy.yaml
 - Destroy "delete" all of the configured VMs and services configurations "will not delete what has been downloaded to save time"
 ```
+- destroy.yaml [Destroy OCP4 cluster and delete downloaded files]
 ```
-ansible-playbook destroy.yaml -e delete_downloads=true
+# ansible-playbook destroy.yaml -e delete_downloads=true
 - Pass the parameter "delete_downloads=true" to also delete all of downloaded files "/var/www/html/downloads/ directoy will be deleted"
 ```
 # Detailed Steps:
