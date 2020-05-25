@@ -18,7 +18,7 @@ This Ansible playbook will install OCP4 "any minor version" on a KVM environment
 # What do you have to do beforehand:
 - The playbooks will try to download everything that you will need under "/var/www/html/downloads/"
 - Make sure you are using "root" user
-- make sure your system is subscribed or at least has a configured repositories to install the following packages [playbooks will try to install it]:
+- make sure your system "bastion host" is subscribed or at least has a configured repositories to install the following packages [playbooks will try to install it]:
 ```
 - httpd
 - dnsmasq
