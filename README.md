@@ -124,19 +124,20 @@ delete_downloads: false
 
 
 # Which playbook to run:
-- There are two main playbooks:
-  - start_point.yaml:
-    - The playbook will ask you for the required OCP version then start downloading required files, configure cluster VMs, start loadbalancer VM and configure HAProxy. It will also start OpenShift 4 deployment
-  - start_point.yaml -e ocpversion=4.3.13
-    - The playbook will proceed to donwload and install the required OCP version.
+- There are two main playbooks [tart_point.yaml and destroy.yaml], and you can use them as follows:
+  - start_point.yaml [Interactive way]:
+    - # ansible-playbook start_point.yaml
+      - The playbook will list the avilabl OCP4 minor and micro versions to select from it manually before it proceeds installing the cluster componenets.
+  - start_point.yaml [Automatic way]:
+    - # ansible-playbook start_point.yaml -e ocpversion=4.3.13
+      - The playbook will proceed to donwload and install the required OCP version "4.3.13 in this example".
   - destroy.yaml
-    - Destroy "delet" all of the configured VMs and services "will not delete what has been downloaded to save time"
-    - Pass the parameter "delete_downloads=true" to also delete downloaded files
-    - **ansible-playbook destroy.yaml**
+    - # ansible-playbook destroy.yaml
+      - Destroy "delete" all of the configured VMs and services configurations "will not delete what has been downloaded to save time"
+    - # ansible-playbook destroy.yaml -e delete_downloads=true
+      - Pass the parameter "delete_downloads=true" to also delete all of downloaded files "/var/www/html/downloads/ directoy will be deleted"
 
-# OCP 4 Deployment Process:
-[NOTE] The playbook will pause at "Before starting with OCP 4 installation check" task to let you check if all VMs are up and running and check DNS records before proceeding with the OCP deployment to avoid any issue.
-
+# Detailed Steps:
 - Make sure your are using the "root"
 ```
 [bastionhost]# sudo su -
@@ -149,9 +150,6 @@ delete_downloads: false
 ```
 [bastionhost]# cd ocp4_kvm_ansible
 ```
-- Download rhel-server-7.7-x86_64-kvm.qcow2 image to the current directory `ocp4_kvm_ansible`
-
-
 - Make sure you have enough reources, specially in "/var":
   - /var/www/html/downloads/ will take around 2GB
   - /var/lib/libvirt/images/ will depend on how much disk space you gave to each VM
@@ -160,24 +158,33 @@ delete_downloads: false
 
 - Start the installation process:
 ```
-[bastionhost]# ansible-playbook start_point.yaml
+[bastionhost]# ansible-playbook start_point.yaml -e ocpversion=4.3.13
 ```
 - If the downloads are complete but the installation failed, please delete the environment then repeat the same process but skip the "downloading" task this time:
 ```
 [bastionhost]# ansible-playbook destroy.yaml
 [bastionhost]# ansible-playbook start_point.yaml --skip-tags download
 ```
-- If the playbook completed successfilly, you should see this section at the end:
+- If the playbook completed successfilly, you should see something similar to the follwoing:
 ```
-TASK [OCP 4 deployment [it will retry on failuer for 10 times or till it succeeds]] ****************************************************
-changed: [localhost]
-
-PLAY RECAP *****************************************************************************************************************************
-localhost                  : ok=46   changed=33   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0 
+TASK [Cluster access details] **********************************************************************************************************
+Tuesday 26 May 2020  00:32:47 +0400 (0:00:00.245)       0:22:38.901 *********** 
+ok: [localhost] => {
+    "msg": [
+        "Cluster version:           4.3.13", 
+        "Cluster name:              ocp44", 
+        "Cluster domain:            mydomain.com", 
+        "API URL:                   api.ocp44.mydomain.com:6443", 
+        "Console URL:               console-openshift-console.apps.ocp44.mydomain.com", 
+        "Kubeadmin credentials:     kubeadmin/YYWEi-Y9dwm-CnKLs-V5W8L", 
+        "Cluster Auth files:        /var/www/html/downloads/4.3.13/install_dir/auth/kubeconfig", 
+        "Certificate based access:  export KUBECONFIG=/var/www/html/downloads/4.3.13/install_dir/auth/kubeconfig"
+    ]
+}
 ```
 - You can check if the OCP4 deployment is completed "or follow deployment progress" by connecting to the "bootstarp" VM and running the following commands "example":
 ```
-[bastionhost]# ssh -i ~/.ssh/id_rsa core@bootstrap.ocp4.mydomain.com
+[bastionhost]# ssh -i ./ocp-ssh-key core@bootstrap.ocp4.mydomain.com
 [core@bootstrap ~]$ sudo su -
 Last login: Fri Apr 10 09:22:28 UTC 2020 on pts/0
 [root@bootstrap ~]# journalctl -b -f -u bootkube.service
@@ -186,7 +193,7 @@ Apr 10 09:56:41 bootstrap.ocp4.mydomain.com bootkube.sh[1601]: Skipped "cluster-
 Apr 10 09:56:45 bootstrap.ocp4.mydomain.com bootkube.sh[1601]: Skipped "cluster-network-02-config.yml" networks.v1.config.openshift.io/cluster -n  as it already exists
 Apr 10 09:56:46 bootstrap.ocp4.mydomain.com bootkube.sh[1601]: Skipped "cluster-proxy-01-config.yaml" proxies.v1.config.openshift.io/cluster -n  as it already exists
 Apr 10 09:56:47 bootstrap.ocp4.mydomain.com bootkube.sh[1601]: Tearing down temporary bootstrap control plane...
-Apr 10 09:56:51 bootstrap.ocp4.mydomain.com bootkube.sh[1601]: bootkube.service complete  <--- Confirm that you can see this log message
+Apr 10 09:56:51 bootstrap.ocp4.mydomain.com bootkube.sh[1601]: bootkube.service complete
 ```
 - Once you have confirmed that OCP4 deployment is done, login to OCP4 cluster and confirm that the nodes are running:
 ```
@@ -200,16 +207,14 @@ worker-1.ocp4.mydomain.com   Ready    worker          42m   v1.14.6+c07e432da
 worker-2.ocp4.mydomain.com   Ready    worker          41m   v1.14.6+c07e432da
 worker-3.ocp4.mydomain.com   Ready    worker          42m   v1.14.6+c07e432da
 ```
-
 - You can delete "bootstrap" VM once the deployment is completed and confirmed.
-
 
 # Destroy The envirnment:
 - To delete all of the created resources "VMs, DNS records, KVM networks,...." run the following playook "**it will NOT delete donwloaded files**":
 ```
 [bastionhost]# ansible-playbook destroy.yaml
 ```
-- To delete all of the downloaded/created resources beside the downloaded files:
+- To delete all of the downloaded/created resources beside the downloaded files "/var/www/html/downloads/ directoy will be deleted":
 ```
 [bastionhost]# ansible-playbook destroy.yaml -e delete_downloads=true
 ```
@@ -236,10 +241,5 @@ image-registry                                       False	 True          False	
 ~~~
 
 # Current Limitations:
-- Currently supported OCP versions:
-  - 4.1.x
-  - 4.2.x
-  - 4.3.x
-  - 4.4.x
 - I have tried the playbboks while using HDD disks and it showed a poor performance, I recommend using SSD to host VMs virtual disks.
 - If a task failed, I have to destroy the environment "destroy.yaml" and deploy it again.
