@@ -1,14 +1,10 @@
 # ocp4_kvm_ansible
-Deploying OCP4 over KVM using Ansible:
-
-- In this lab I will automate deploing OCP 4.2/4.3 over KVM using Ansible Playbooks:
-- I am using https://redhat.slides.com/knaeem/ocp4-upi-kvm/fullscreen?token=J0DE1k96#/ and https://docs.openshift.com/container-platform/4.2/installing/installing_bare_metal/installing-bare-metal.html as a guide to create my Playbooks.
+This playbook(s) will install OCP4 "any minor versions" on a KVM environment.
 
 # Lab Environment, I have tested the playbooks on:
 - Lenovo Thinkpad P70 Laptop
   - Core I7 vPro 8th Gen
   - 64 GB RAM
-- RHEL 8.1 "minimum installation" + ansible 2.9.5
 - RHEL 7.7 "minimum installation" + ansible-2.9.6
 
 # Tested OCP versions
@@ -17,11 +13,10 @@ Deploying OCP4 over KVM using Ansible:
 - OCP 4.3.0
 - OCP 4.3.13
 - OCP 4.4.3
+- OCP 4.4.5
 
 # What do you have to do beforehand:
-- The playbooks will download everything that you need sxcept RHEL KVM image, as it requires logining into Red Hat portal:
-[rhel-server-7.7-x86_64-kvm.qcow2](https://access.redhat.com/downloads/content/69/ver=/rhel---7/7.7/x86_64/product-software)
-- Create a directory and pull the project files there
+- The playbooks will try to download everything that you will need under "/var/www/html/downloads/"
 - Make sure you are using "root" user
 - make sure your system is subscribed or at least has a configured repositories to install the following packages [playbooks will try to install it]:
 ```
@@ -38,9 +33,9 @@ Deploying OCP4 over KVM using Ansible:
 
 # Variables to set before starting the playbook:
 
-- If you set **ocpversion** parameter the playbook will not ask you to input the target version manually
+- If you set **ocpversion** parameter using "-e" option, the playbook will check if this versions is a valid version and start installing it.
 
-- If you are not sure which OCP version is avaiable or to choose, don't set this parameter" and the playbook give you a list of the available versions to choose from, for example:
+- If you are not sure which OCP versions are avaiable, don't set this parameter and the playbook will give you a list of the available versions to choose from, for example:
 ```
 - The playbook will ask you to select between three OCP minor vrsions:
 - 4.1
@@ -85,15 +80,6 @@ ok: [localhost] => {
 ```
 # Pull secret, it can be grabbed from here "https://cloud.redhat.com/openshift/install/metal/user-provisioned":
 pullsecret: 'PASTE HERE'
-
-# Red Hat account, will be used to install HAProxy:
-rhn_username: USERNAME
-rhn_password: PASSWORD
-
-# SSH private/public keys that will be used to access cluster nodes:
-ssh_private_key_file: /root/.ssh/id_rsa
-ssh_key_file: /root/.ssh/id_rsa.pub
-ssh_key: "PASTE SSH PUBLIC KEY CONTENTS HERE"
 
 # bastion_ip, is the IP of the host you are running Ansible playbook on:
 bastion_ip: 192.168.1.142
