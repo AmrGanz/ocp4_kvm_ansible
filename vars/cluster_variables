@@ -23,7 +23,7 @@ worker_mem: 16384
 worker_disk: 50
 #=========================================================
 # Default value is "/var/lib/libvirt/images/"
-vms_disks_location: "/home/images/"
+vms_disks_location: "/var/lib/libvirt/images/"
 #=========================================================
 domain_name: mydomain.com
 cluster_name: ocp44
