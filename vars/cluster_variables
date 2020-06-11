@@ -1,7 +1,7 @@
 #=========================================================
 pullsecret: 'PASTE PULL SECRET HERE'
 #=========================================================
-bastion_ip: 192.168.1.142
+bastion_ip: PASTE THE IP ADDRESS OF THE BASTION HOST HERE
 macbase: "80:00:00:00:00:"
 network_subnet_octet: 123
 #=========================================================
