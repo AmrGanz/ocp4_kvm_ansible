@@ -21,7 +21,6 @@
     - httpd
     - dnsmasq
     - libvirtd
-    - firewalld
 
 - name: Add HTTP to firewall
   firewalld:
@@ -38,6 +37,7 @@
     - httpd
     - dnsmasq
     - libvirtd
+    - firewalld
 
 - name: Create /var/www/html/downloads
   file:
