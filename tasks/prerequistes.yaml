@@ -21,6 +21,7 @@
     - httpd
     - dnsmasq
     - libvirtd
+    - firewalld
 
 - name: Add HTTP to firewall
   firewalld:
