@@ -16,9 +16,9 @@
 - OCP 4.4.5
 
 # What do you have to do beforehand:
-- The playbooks will try to download everything that you will need under "/var/www/html/downloads/"
+- The playbooks will try to download everything that you will need under projects directoy and "/var/www/html/downloads/"
 - Make sure you are using "root" user
-- make sure your system "bastion host" is subscribed or at least has a configured repositories to install the following packages [playbooks will try to install it]:
+- make sure your system "bastion host" is subscribed or at least has a configured repositories to install the following packages [the playbook will try to install all prerequisites]:
 ```
 - httpd
 - dnsmasq
@@ -30,66 +30,14 @@
 - libvirt-daemon-driver-network
 - virt-manager
 ```
-- And of cousre you will need to install Ansible on the bastion host :)
+- And ofcousre you will need to install Ansible on the bastion host :)
 
 # Variables to set before starting the playbook:
 
-- If you set **ocpversion** parameter using "-e" option, the playbook will check if this versions is a valid version and start installing it.
-
-- If you are not sure which OCP versions are avaiable, don't set this parameter and the playbook will give you a list of the available versions to choose from, for example:
-```
-- The playbook will ask you to select between three OCP minor vrsions:
-- 4.1
-- 4.2
-- 4.3
-
-- Example:
-
-TASK [Listing available minor versions] ************************************************************************************************
-ok: [localhost] => {
-    "minorversions.stdout_lines": [
-        "4.1", 
-        "4.2", 
-        "4.3"
-    ]
-}
-```
-- Then it will show all of the available micro versions to select from, for example and fater selecting "4.3" from the previous output:
-```
-TASK [debug] ***************************************************************************************************************************
-ok: [localhost] => {
-    "microversions.stdout_lines": [
-        "4.3.0", 
-        "4.3.1", 
-        "4.3.2", 
-        "4.3.3", 
-        "4.3.5", 
-        "4.3.8", 
-        "4.3.9", 
-        "4.3.10", 
-        "4.3.11", 
-        "4.3.12", 
-        "4.3.13", 
-        "4.3.14", 
-        "4.3.15", 
-        "4.3.17"
-    ]
-}
-
-```
-- Other variables that you need to be set:
+- Variables that you need to be set:
 ```
 # Pull secret, it can be grabbed from here "https://cloud.redhat.com/openshift/install/metal/user-provisioned":
 pullsecret: 'PASTE HERE'
-
-# bastion_ip, is the IP of the host you are running Ansible playbook on:
-bastion_ip: 192.168.1.142
-
-# Base MAC address "first 5 segments", the playbook will complete the MAC address for each node:
-macbase: "90:00:00:00:00:"
-
-# This octedt will be added to "192.168.XXX.0" network that will be dedictaed for cluster nodes:
-network_subnet_octet: 125
 
 # Bootstrap VM resources configuration:
 bootstrap_cpu: 2
@@ -125,12 +73,47 @@ delete_downloads: false
 
 
 # Which playbook to run:
-- There are two main playbooks [tart_point.yaml and destroy.yaml], and you can use them as follows:
+- There are two main playbooks [start_point.yaml and destroy.yaml], and you can use them as follows:
 - start_point.yaml [Interactive way]:
 ```
+- If you are not sure which OCP versions are avaiable to install, the playbook will give you a list of the available versions to choose from, for example:
+
 # ansible-playbook start_point.yaml
-- The playbook will list the avilabl OCP4 minor and micro versions to select from it manually before it proceeds installing the cluster componenets.
+
+TASK [Listing available minor versions] ************************************************************************************************
+ok: [localhost] => {
+    "minorversions.stdout_lines": [
+        "4.1", 
+        "4.2", 
+        "4.3", 
+        "4.4"
+    ]
+}
+
+- Then it will show all of the available micro versions to select from, for example and fater selecting "4.3" from the previous output:
+
+TASK [debug] ***************************************************************************************************************************
+ok: [localhost] => {
+    "microversions.stdout_lines": [
+        "4.3.0", 
+        "4.3.1", 
+        "4.3.2", 
+        "4.3.3", 
+        "4.3.5", 
+        "4.3.8", 
+        "4.3.9", 
+        "4.3.10", 
+        "4.3.11", 
+        "4.3.12", 
+        "4.3.13", 
+        "4.3.14", 
+        "4.3.15", 
+        "4.3.17"
+    ]
+}
+
 ```
+
 - start_point.yaml [Automatic way]:
 ```
 # ansible-playbook start_point.yaml -e ocpversion=4.3.13
