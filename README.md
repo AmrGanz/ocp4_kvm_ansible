@@ -74,9 +74,9 @@ delete_downloads: false
 
 # Which playbook to run:
 - There are two main playbooks [start_point.yaml and destroy.yaml], and you can use them as follows:
-- start_point.yaml [Interactive way]:
+- start_point.yaml [**Interactive way**]:
 ```
-- If you are not sure which OCP versions are avaiable to install, the playbook will give you a list of the available versions to choose from, for example:
+- This is when you are not sure which OCP versions are avaiable to install, the playbook will give you a list of the available versions to choose from, for example:
 
 # ansible-playbook start_point.yaml
 
@@ -90,7 +90,7 @@ ok: [localhost] => {
     ]
 }
 
-- Then it will show all of the available micro versions to select from, for example and fater selecting "4.3" from the previous output:
+- After you select a Minor Version it will show all of the available micro versions to select from, for example and after selecting "4.3" from the previous output:
 
 TASK [debug] ***************************************************************************************************************************
 ok: [localhost] => {
@@ -114,17 +114,21 @@ ok: [localhost] => {
 
 ```
 
-- start_point.yaml [Automatic way]:
+- start_point.yaml [**Automatic way**]:
 ```
+- Set the "copversion" variable while running the playbook
+
 # ansible-playbook start_point.yaml -e ocpversion=4.3.13
+
 - The playbook will proceed to donwload and install the required OCP version "4.3.13 in this example".
 ```
-- destroy.yaml [Destroy OCP4 cluster without deleting downloaded files]
+
+- destroy.yaml [Destroy OCP4 cluster **without** deleting downloaded files]
 ```
 # ansible-playbook destroy.yaml
 - Destroy "delete" all of the configured VMs and services configurations "will not delete what has been downloaded to save time"
 ```
-- destroy.yaml [Destroy OCP4 cluster and delete downloaded files]
+- destroy.yaml [Destroy OCP4 cluster **and delete downloaded files**]
 ```
 # ansible-playbook destroy.yaml -e delete_downloads=true
 - Pass the parameter "delete_downloads=true" to also delete all of downloaded files "/var/www/html/downloads/ directoy will be deleted"
@@ -143,7 +147,7 @@ ok: [localhost] => {
 [bastionhost]# cd ocp4_kvm_ansible
 ```
 - Make sure you have enough reources, specially in "/var":
-  - /var/www/html/downloads/ will take around 2GB
+  - /var/www/html/downloads/ will take around 2GB for one minor version
   - /var/lib/libvirt/images/ will depend on how much disk space you gave to each VM
 
 - Edit the variables in `ocp4_kvm_ansible/vars/cluster_variables` to better suit your setup "please give enough resources to master and worker nodes"
@@ -152,10 +156,10 @@ ok: [localhost] => {
 ```
 [bastionhost]# ansible-playbook start_point.yaml -e ocpversion=4.3.13
 ```
-- If the downloads are complete but the installation failed, please delete the environment then repeat the same process but skip the "downloading" task this time:
+- If the downloads are complete but the installation failed, please delete the environment then repeat the same process.
 ```
 [bastionhost]# ansible-playbook destroy.yaml
-[bastionhost]# ansible-playbook start_point.yaml --skip-tags download
+[bastionhost]# ansible-playbook start_point.yaml
 ```
 - If the playbook completed successfilly, you should see something similar to the follwoing:
 ```
