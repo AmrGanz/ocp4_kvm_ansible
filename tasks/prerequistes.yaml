@@ -37,7 +37,6 @@
     - httpd
     - dnsmasq
     - libvirtd
-    - firewalld
 
 - name: Create /var/www/html/downloads
   file:
@@ -59,13 +58,68 @@
     path: "./ocp-ssh-key"
   ignore_errors: yes
 
-- set_fact:
+- name: Setting SSH private/Public keys variables
+  set_fact:
     ssh_private_key_file: "./ocp-ssh-key"
     ssh_public_key_file: "./ocp-ssh-key.pub"
     
-- slurp:
+- name: Reading SSH publiuc key into a file
+  slurp:
     src: "./ocp-ssh-key.pub"
   register: ssh_public_key
 
-- set_fact:
+- name: Decrypting SSH public key
+  set_fact:
     ssh_public_key: "{{ ssh_public_key['content'] | b64decode  }}"
+
+- name: Generting a random network subnet octet
+  set_fact:
+    network_subnet_octet: "{{ 254 | random }}"
+  run_once: yes
+  when: network_subnet_octet is not defined
+
+- name: Getting the bastion IP address
+  set_fact: 
+    bastion_ip: "192.168.{{ network_subnet_octet }}.1"
+
+- name: Generting a random MAC base
+  set_fact:
+    macbase: "80:{{ 9 | random }}{{ 9 | random }}:{{ 9 | random }}{{ 9 | random }}:{{ 9 | random }}{{ 9 | random }}:{{ 9 | random }}{{ 9 | random }}:"
+  run_once: yes
+  when: macbase is not defined
+
+- name: Removing masters records from known_hosts file if exists
+  lineinfile:
+    path: /root/.ssh/known_hosts
+    regexp: "^master-{{ item }}.{{ cluster_name }}.{{ domain_name }}"
+    state: absent
+  loop:
+    - 1
+    - 2
+    - 3
+  ignore_errors: yes
+
+- name: Removing workers records from known_hosts file if exists
+  lineinfile:
+    path: /root/.ssh/known_hosts
+    regexp: "^worker-{{ item }}.{{ cluster_name }}.{{ domain_name }}"
+    state: absent
+  loop:
+    - 1
+    - 2
+    - 3
+  ignore_errors: yes
+
+- name: Removing bootstrap records from known_hosts file if exists
+  lineinfile:
+    path: /root/.ssh/known_hosts
+    regexp: "^bootstrap.{{ cluster_name }}.{{ domain_name }}.com"
+    state: absent
+  ignore_errors: yes
+
+- name: Removing loadbalancer records from known_hosts file if exists
+  lineinfile:
+    path: /root/.ssh/known_hosts
+    regexp: "^lb.{{ cluster_name }}.{{ domain_name }}"
+    state: absent
+  ignore_errors: yes

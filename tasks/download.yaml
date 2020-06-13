@@ -13,6 +13,12 @@
     path: "/var/www/html/downloads/{{ minorversion }}/rhcos/"
     state: directory
 
+- name: Recursively remove ocp microversion directory if exists
+  file:
+    path: "/var/www/html/downloads/{{ minorversion }}.{{ microversion }}"
+    state: absent
+  ignore_errors: yes
+
 - name: Create cluster resources directories
   file:
     path: "/var/www/html/downloads/{{ minorversion }}.{{ microversion }}"

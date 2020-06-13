@@ -6,16 +6,20 @@
         file: vars/cluster_variables
       tags: vars
 
-    - name: Stop bootstrap,loadbalancer and masters VMs
+    - name: Stop bootstrap and loadbalancer VMs
       virt:
         state: destroyed
         name: "{{ item }}"
       loop:
          - "{{ cluster_name }}-bootstrap"
          - "{{ cluster_name }}-loadbalancer"
-         - "{{ cluster_name }}-master1"
-         - "{{ cluster_name }}-master2"
-         - "{{ cluster_name }}-master3"
+      ignore_errors: yes
+    
+    - name: Stop all of the master VMs
+      virt:
+        state: destroyed
+        name: "{{ cluster_name }}-master{{ item }}"
+      with_sequence: "start=1 end={{ master_count }}"
       ignore_errors: yes
     
     - name: Stop all of the worker VMs
@@ -25,14 +29,16 @@
       with_sequence: "start=1 end={{ worker_count }}"
       ignore_errors: yes
     
-    - name: Delete bootstrap,loadbalancer and masters VMs
+    - name: Delete bootstrap and loadbalancer VMs
       command: 'virsh undefine --domain "{{ item }}"'
       loop:
          - "{{ cluster_name }}-bootstrap"
          - "{{ cluster_name }}-loadbalancer"
-         - "{{ cluster_name }}-master1"
-         - "{{ cluster_name }}-master2"
-         - "{{ cluster_name }}-master3"
+      ignore_errors: yes
+    
+    - name: Delete all of the master VMs
+      command: "virsh undefine --domain {{ cluster_name }}-master{{ item }}"
+      with_sequence: "start=1 end={{ master_count }}"
       ignore_errors: yes
     
     - name: Delete all of the worker VMs
@@ -40,16 +46,13 @@
       with_sequence: "start=1 end={{ worker_count }}"
       ignore_errors: yes
     
-    - name: Delete bootstrap,loadbalancer and masters images from /var/lib/libvirt/images/
+    - name: Delete bootstrap and loadbalancer images from {{ vms_disks_location }}
       file: 
         name: "{{ vms_disks_location }}{{ item }}.qcow2"
         state: absent
       loop:
          - "{{ cluster_name }}-bootstrap"
          - "{{ cluster_name }}-loadbalancer"
-         - "{{ cluster_name }}-master1"
-         - "{{ cluster_name }}-master2"
-         - "{{ cluster_name }}-master3"
       ignore_errors: yes
     
     - name: Delete Master VMs images from {{ vms_disks_location }}
@@ -85,70 +88,83 @@
         path: "/etc/dnsmasq.d/except-interfaces.conf"
       ignore_errors: yes
     
-    - name: Update /etc/hosts file with master nodes recored
+    - name: Cleaning /etc/hosts file from masters records
       lineinfile:
         path: /etc/hosts
-        line: "192.168.{{ network_subnet_octet }}.1{{ item }} master-{{ item }}.{{ cluster_name }}.{{ domain_name }}"
+        regexp: "master-.*.{{ cluster_name }}.{{ domain_name }}"
         state: absent
-      loop:
-        - 1
-        - 2
-        - 3
       ignore_errors: yes
     
-    - name: Update /etc/hosts file with etcd records
+    - name: Cleaning /etc/hosts file from etcd records
       lineinfile:
         path: /etc/hosts
-        line: "192.168.{{ network_subnet_octet }}.1{{ item +1 }} etcd-{{ item }}.{{ cluster_name }}.{{ domain_name }}"
+        regexp: "etcd-.*.{{ cluster_name }}.{{ domain_name }}"
         state: absent
-      loop:
-        - 0
-        - 1
-        - 2
       ignore_errors: yes
     
-    - name: Update /etc/hosts file with worker nodes recored
+    - name: Cleaning /etc/hosts file from workers records
       lineinfile:
         path: /etc/hosts
-        line: "192.168.{{ network_subnet_octet }}.2{{ item }} worker-{{ item }}.{{ cluster_name }}.{{ domain_name }}"
+        regexp: "worker-.*.{{ cluster_name }}.{{ domain_name }}"
         state: absent
-      with_sequence: "start=1 end={{ worker_count }}"
       ignore_errors: yes
     
-    - name: Update /etc/hosts file removing loadbalancer recored
+    - name: Cleaning /etc/hosts file from loadbalancer record
       lineinfile:
         path: /etc/hosts
-        line: "192.168.{{ network_subnet_octet }}.9 lb.{{ cluster_name }}.{{ domain_name }}"
+        regexp: "lb.{{ cluster_name }}.{{ domain_name }}"
         state: absent
       ignore_errors: yes
     
-    - name: Update /etc/hosts file removing loadbalancer "api" recored
+    - name: Cleaning /etc/hosts file from api record
       lineinfile:
         path: /etc/hosts
-        line: "192.168.{{ network_subnet_octet }}.9 api.{{ cluster_name }}.{{ domain_name }}"
+        regexp: "api.{{ cluster_name }}.{{ domain_name }}"
         state: absent
       ignore_errors: yes
     
-    - name: Update /etc/hosts file removing lodblanacer "api-int" recored
+    - name: Cleaning /etc/hosts file from api-int record
       lineinfile:
         path: /etc/hosts
-        line: "192.168.{{ network_subnet_octet }}.9 api-int.{{ cluster_name }}.{{ domain_name }}"
+        regexp: "api-int.{{ cluster_name }}.{{ domain_name }}"
         state: absent
       ignore_errors: yes
     
-    - name: Update /etc/hosts file removing bootstrap record
+    - name: Cleaning /etc/hosts file from bootstrap record
       lineinfile:
         path: /etc/hosts
-        line: "192.168.{{ network_subnet_octet }}.8 bootstrap.{{ cluster_name }}.{{ domain_name }}"
+        regexp: "bootstrap.{{ cluster_name }}.{{ domain_name }}"
         state: absent
       ignore_errors: yes
     
-    - name: Delete install_dir Diretory
-      file: 
-        name: "/var/www/html/downloads/{{ minorversion }}.{{ microversion }}/install_dir/"
+    - name: Cleaning /root/.ssh/known_hosts file from masters records
+      lineinfile:
+        path: /root/.ssh/known_hosts
+        regexp: "master-.*.{{ cluster_name }}.{{ domain_name }}"
         state: absent
       ignore_errors: yes
     
+    - name: Cleaning /root/.ssh/known_hosts file from workers records
+      lineinfile:
+        path: /root/.ssh/known_hosts
+        regexp: "worker-.*.{{ cluster_name }}.{{ domain_name }}"
+        state: absent
+      ignore_errors: yes
+    
+    - name: Cleaning /root/.ssh/known_hosts file from bootstrap record
+      lineinfile:
+        path: /root/.ssh/known_hosts
+        regexp: "^bootstrap.{{ cluster_name }}.{{ domain_name }}.com"
+        state: absent
+      ignore_errors: yes
+    
+    - name: Cleaning /root/.ssh/known_hosts file from loadbalancer record
+      lineinfile:
+        path: /root/.ssh/known_hosts
+        regexp: "^lb.{{ cluster_name }}.{{ domain_name }}"
+        state: absent
+      ignore_errors: yes
+
     - name: Delete downloads directory
       file:
         path: /var/www/html/downloads/

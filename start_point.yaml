@@ -5,64 +5,64 @@
     microversion: "{{ microversion }}"
     ansible_ssh_private_key_file: ./ocp-ssh-key
   tasks:
-    - name: Include vars [TASK]
+    - name: "[TASK1] Include vars"
       include_vars:
         file: vars/cluster_variables
       tags: vars
 
-    - name: checks [TASK]
+    - name: "[TASK2] checking if the number of Mastrs and Workers are correct"
       import_tasks: tasks/checks.yaml
       tags: checks
 
-    - name: versions [TASK]
+    - name: "[TASK3] Checkingavilabale OCP versions"
       import_tasks: tasks/ocp_versions.yaml
       tags: versions
 
-    - name: Install/enable required packages/services [TASK]
+    - name: "[TASK4] Install/enable required packages/services"
       import_tasks: tasks/prerequistes.yaml
       tags: prerequistes
 
-    - name: Download required files [TASK]
+    - name: "[TASK5] Download required files"
       import_tasks: tasks/download.yaml
       tags: download
 
-    - name: Create Ignition Files [TASK]
+    - name: "[TASK6] Create Ignition Files"
       import_tasks: tasks/ignition.yaml
       tags: ignitions
 
-    - name: Configure KVM networks [TASK]
+    - name: "[TASK7] Configure KVM networks"
       import_tasks: tasks/network.yaml
       tags: networks
 
-    - name: Configuring dnsmasq [TASK]
+    - name: "[TASK8] Configuring dnsmasq"
       import_tasks: tasks/dns.yaml
       tags: dns
 
-    - name: Configure loadbalancer VM [TASK]
+    - name: "[TASK9] Configure loadbalancer VM"
       import_tasks: tasks/loadbalancer.yaml
       tags: loadbalancer
 
-    - name: Copy HAProxy configuration template to loadbalancer VM [TASK]
+    - name: "[TASK10] Copy HAProxy configuration template to loadbalancer VM"
       import_tasks: tasks/haproxy.yaml
       tags: haproxy
       delegate_to: "192.168.{{ network_subnet_octet }}.9"
 
-    - name: Configure bootstrap VM [TASK]
+    - name: "[TASK11] Configure bootstrap VM"
       import_tasks: tasks/bootstrap.yaml
       tags: bootstrap
 
-    - name: Configure Matsers VMs [TASK]
+    - name: "[TASK12] Configure Matsers VMs"
       import_tasks: tasks/masters.yaml
       tags: masters
 
-    - name: Configure workers VMs [TASK]
+    - name: "[TASK13] Configure workers VMs"
       import_tasks: tasks/workers.yaml
       tags: workers
 
-    - name: Prepare OCP4 Deployment Files [TASK]
+    - name: "[TASK14] Prepare OCP4 Deployment Files"
       import_tasks: tasks/predeployment.yaml
       tags: predeployment
    
-    - name: Starting OCP4.x Installation [TASK]
+    - name: "[TASK15] Starting OCP4.x Installation"
       import_tasks: tasks/ocp_install.yaml
       tags: deployment
