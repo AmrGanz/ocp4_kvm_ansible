@@ -246,7 +246,7 @@ image-registry                                       False	 True          False	
 ~~~
 - Change Image Registry managed state if required by following this [document](https://docs.openshift.com/container-platform/4.4/registry/configuring_registry_storage/configuring-registry-storage-baremetal.html#registry-removed_configuring-registry-storage-baremetal):
 ~~~
-After installation, you must edit the Image Registry Operator configuration to switch the ManagementState from Removed to Managed.
+# oc patch Config cluster --type merge --patch '{"spec":{"managementState":"Managed"}}'
 ~~~
 - Make sure to set the storage backend, at least to EmptyDir:
 ~~~
