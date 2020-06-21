@@ -1,5 +1,5 @@
 #=========================================================
-pullsecret: 'PASTE PULL SECRET HERE'
+pullsecret: ''
 #=========================================================
 bootstrap_cpu: 2
 bootstrap_mem: 8192
@@ -13,15 +13,14 @@ master_cpu: 4
 master_mem: 16384
 master_disk: 50
 #=========================================================
-worker_count: 3
+worker_count: 0
 worker_cpu: 4
 worker_mem: 16384
 worker_disk: 50
 #=========================================================
-# Default value is "/var/lib/libvirt/images/"
 vms_disks_location: "/var/lib/libvirt/images/"
 #=========================================================
-domain_name: mydomain.com
+domain_name: domain.com
 cluster_name: ocp4
 #=========================================================
 delete_downloads: false

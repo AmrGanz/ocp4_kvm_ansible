@@ -25,7 +25,7 @@
     state: directory
 
 - name:
-  shell: curl -s https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/{{ minorversion }}/ | grep "{{ minorversion }}\."  | sed 's|.*href="||' | sed 's|/".*||' | head -n1
+  shell: curl -s https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/{{ minorversion }}/ | grep folder | sed 's|.*href="||' | sed 's|/".*||' | head -n1
   register: availableversion
 
 - name: Fetching RHCOS kernel file name

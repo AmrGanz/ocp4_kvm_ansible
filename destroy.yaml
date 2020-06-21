@@ -6,68 +6,8 @@
         file: vars/cluster_variables
       tags: vars
 
-    - name: Stop bootstrap and loadbalancer VMs
-      virt:
-        state: destroyed
-        name: "{{ item }}"
-      loop:
-         - "{{ cluster_name }}-bootstrap"
-         - "{{ cluster_name }}-loadbalancer"
-      ignore_errors: yes
-    
-    - name: Stop all of the master VMs
-      virt:
-        state: destroyed
-        name: "{{ cluster_name }}-master{{ item }}"
-      with_sequence: "start=1 end={{ master_count }}"
-      ignore_errors: yes
-    
-    - name: Stop all of the worker VMs
-      virt:
-        state: destroyed
-        name: "{{ cluster_name }}-worker{{ item }}"
-      with_sequence: "start=1 end={{ worker_count }}"
-      ignore_errors: yes
-    
-    - name: Delete bootstrap and loadbalancer VMs
-      command: 'virsh undefine --domain "{{ item }}"'
-      loop:
-         - "{{ cluster_name }}-bootstrap"
-         - "{{ cluster_name }}-loadbalancer"
-      ignore_errors: yes
-    
-    - name: Delete all of the master VMs
-      command: "virsh undefine --domain {{ cluster_name }}-master{{ item }}"
-      with_sequence: "start=1 end={{ master_count }}"
-      ignore_errors: yes
-    
-    - name: Delete all of the worker VMs
-      command: "virsh undefine --domain {{ cluster_name }}-worker{{ item }}"
-      with_sequence: "start=1 end={{ worker_count }}"
-      ignore_errors: yes
-    
-    - name: Delete bootstrap and loadbalancer images from {{ vms_disks_location }}
-      file: 
-        name: "{{ vms_disks_location }}{{ item }}.qcow2"
-        state: absent
-      loop:
-         - "{{ cluster_name }}-bootstrap"
-         - "{{ cluster_name }}-loadbalancer"
-      ignore_errors: yes
-    
-    - name: Delete Master VMs images from {{ vms_disks_location }}
-      file: 
-        name: "{{ vms_disks_location }}{{ cluster_name }}-master{{ item }}.qcow2"
-        state: absent
-      with_sequence: "start=1 end={{ master_count }}"
-      ignore_errors: yes
-
-    - name: Delete Worker VMs images from {{ vms_disks_location }}
-      file: 
-        name: "{{ vms_disks_location }}{{ cluster_name }}-worker{{ item }}.qcow2"
-        state: absent
-      with_sequence: "start=1 end={{ worker_count }}"
-      ignore_errors: yes
+    - name: Delete clutser VMs
+      shell: "for i in `virsh list --all --name | grep {{ cluster_name }}`; do virsh destroy --domain $i ; virsh undefine --domain $i --remove-all-storage; done"
     
     - name: Delete configured cluster network
       virt_net:

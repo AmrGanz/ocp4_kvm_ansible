@@ -1,7 +1,14 @@
-- name: Install HAProxy package
+- name: Install HAProxy package "using yum module"
   yum:
     name: haproxy
     state: present
+  ignore_errors: yes
+
+- name: Install HAProxy package "using dnf module"
+  dnf:
+    name: haproxy
+    state: present
+  ignore_errors: yes
 
 - name: Copy HAProxy configurations to loadbalancer VM
   template:

@@ -1,4 +1,4 @@
-- name: Copy loadbalancer qcow disk image and rename it
+- name: Copy loadbalancer disk image and rename it
   copy:
     src: ./CentOS-7-x86_64-GenericCloud.qcow2
     dest: '{{ vms_disks_location }}{{ cluster_name }}-loadbalancer.qcow2'

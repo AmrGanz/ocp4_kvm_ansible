@@ -21,6 +21,7 @@
     state: running
     name: "{{ cluster_name }}-worker{{ item }}"
   with_sequence: "start=1 end={{ worker_count }}"
+  ignore_errors: yes
 
 - name: Cheking if Masters VMs are up
   shell: |
@@ -61,6 +62,18 @@
 - name: Grabbing Kubeadmin password
   shell: cat /var/www/html/downloads/{{ minorversion }}.{{ microversion }}/install_dir/.openshift_install_state.json | grep *password.KubeadminPassword -A5 | grep '"Password"' | cut -d'"' -f4
   register: kubepasswd
+
+- name: Stop bootstrap VM
+  virt:
+    state: destroyed
+    name: "{{ item }}"
+  loop:
+    - "{{ cluster_name }}-bootstrap"
+
+- name: Delete bootstrap VM
+  command: 'virsh undefine --domain "{{ item }}"'
+  loop:
+    - "{{ cluster_name }}-bootstrap"
 
 - name: Cluster access details
   debug:

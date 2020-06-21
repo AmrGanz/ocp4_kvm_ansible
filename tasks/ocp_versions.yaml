@@ -1,7 +1,7 @@
 - name: List OCP minor versions supported by this playbook
   block:
     - name: Quering available minor versions
-      shell: 'curl -s  https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/ | grep -o "4\.[0-9]" | egrep -v "4.5" | sort | uniq'
+      shell: 'curl -s  https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/ | grep -o "4\.[0-9]" | grep -v 4.5 | sort | uniq'
       register: minorversions
     - name: Listing available minor versions
       debug:

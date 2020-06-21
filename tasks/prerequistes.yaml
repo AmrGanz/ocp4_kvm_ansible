@@ -1,4 +1,4 @@
-- name: Install HTTPS,DNS and KVM packages
+- name: Install HTTPS,DNS and KVM packages "using yum module"
   yum:
     name: "{{ item }}"
     state: latest
@@ -12,6 +12,23 @@
     - virt-install
     - libvirt-daemon-driver-network
     - virt-manager
+  ignore_errors: yes
+
+- name: Install HTTPS,DNS and KVM packages "using dnf module"
+  dnf:
+    name: "{{ item }}"
+    state: latest
+  loop:
+    - httpd
+    - dnsmasq
+    - qemu-kvm
+    - libvirt
+    - libvirt-python
+    - libguestfs-tools
+    - virt-install
+    - libvirt-daemon-driver-network
+    - virt-manager
+  ignore_errors: yes
 
 - name: Enable required services
   service:
@@ -74,13 +91,13 @@
 
 - name: Generting a random network subnet octet
   set_fact:
-    network_subnet_octet: "{{ 254 | random }}"
+    network_subnet_octet: "{{ 254 | random }}.{{ 254 | random }}"
   run_once: yes
   when: network_subnet_octet is not defined
 
 - name: Getting the bastion IP address
   set_fact: 
-    bastion_ip: "192.168.{{ network_subnet_octet }}.1"
+    bastion_ip: "192.{{ network_subnet_octet }}.1"
 
 - name: Generting a random MAC base
   set_fact:

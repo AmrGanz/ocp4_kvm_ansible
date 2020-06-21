@@ -1,3 +1,8 @@
+- name:
+  set_fact:
+    master_count: master_count|string
+    worker_count: worker_count|string
+
 - name: Copy the XML file of the new Libvirt network for OCP VMs
   template:
     src: templates/network.j2

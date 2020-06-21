@@ -45,7 +45,7 @@
     - name: "[TASK10] Copy HAProxy configuration template to loadbalancer VM"
       import_tasks: tasks/haproxy.yaml
       tags: haproxy
-      delegate_to: "192.168.{{ network_subnet_octet }}.9"
+      delegate_to: "192.{{ network_subnet_octet }}.9"
 
     - name: "[TASK11] Configure bootstrap VM"
       import_tasks: tasks/bootstrap.yaml

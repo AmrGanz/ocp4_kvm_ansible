@@ -7,9 +7,11 @@
     vm_ignition: "worker.ign"
     mac: "2{{ item }}"
   with_sequence: "start=1 end={{ worker_count }}"
+  ignore_errors: yes
 
 - name: Start worker VMs
   virt:
     state: running
     name: "{{ cluster_name }}-worker{{ item }}"
   with_sequence: "start=1 end={{ worker_count }}"
+  ignore_errors: yes

@@ -7,7 +7,7 @@ compute:
 controlPlane:
   hyperthreading: Disabled
   name: master
-  replicas: {{ master_count }}
+  replicas: {{ master_count | int }}
 metadata:
   name: {{ cluster_name }}
 networking:
