@@ -231,10 +231,6 @@ image-registry                                       False	 True          False	
 ~~~
 # oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"managementState":"Managed"}}'
 ~~~
-- Change Image Registry managed state if required by following this [document](https://docs.openshift.com/container-platform/4.4/registry/configuring_registry_storage/configuring-registry-storage-baremetal.html#registry-removed_configuring-registry-storage-baremetal):
-~~~
-# oc patch Config cluster --type merge --patch '{"spec":{"managementState":"Managed"}}'
-~~~
 - Make sure to set the storage backend, at least to EmptyDir:
 ~~~
 # oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"storage":{"emptyDir":{}}}}'
