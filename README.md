@@ -14,6 +14,8 @@
 - OCP 4.3.13
 - OCP 4.4.3
 - OCP 4.4.5
+- OCP 4.4.23
+- OCP 4.5.9
 
 # What do you have to do beforehand:
 - The playbooks will try to download everything that you will need under projects directoy and "/var/www/html/downloads/"
