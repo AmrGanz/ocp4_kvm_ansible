@@ -1,4 +1,6 @@
 - name: Install HTTPS,DNS and KVM packages "using yum module"
+  when: (ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7") or
+        (ansible_facts['distribution'] == "Red Hat Enterprise Linux" and ansible_facts['distribution_major_version'] == "7")
   yum:
     name: "{{ item }}"
     state: latest
@@ -15,6 +17,8 @@
   ignore_errors: yes
 
 - name: Install HTTPS,DNS and KVM packages "using dnf module"
+  when: (ansible_facts['distribution'] == "Fedora" ) or
+        (ansible_facts['distribution'] == "Red Hat Enterprise Linux" and ansible_facts['distribution_major_version'] == "8")
   dnf:
     name: "{{ item }}"
     state: latest
@@ -23,7 +27,8 @@
     - dnsmasq
     - qemu-kvm
     - libvirt
-    - libvirt-python
+    - python3-libvirt
+    - python3-lxml
     - libguestfs-tools
     - virt-install
     - libvirt-daemon-driver-network
