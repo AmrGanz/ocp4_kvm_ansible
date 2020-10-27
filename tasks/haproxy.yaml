@@ -4,12 +4,6 @@
     state: present
   ignore_errors: yes
 
-- name: Install HAProxy package "using dnf module"
-  dnf:
-    name: haproxy
-    state: present
-  ignore_errors: yes
-
 - name: Copy HAProxy configurations to loadbalancer VM
   template:
     src: templates/haproxy_conf.j2
