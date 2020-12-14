@@ -1,7 +1,7 @@
 - name: List OCP minor versions supported by this playbook
   block:
     - name: Quering available minor versions
-      shell: 'curl -s  https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/ | grep -o "4\.[0-9]" | grep -v 4.5 | sort | uniq'
+      shell: 'curl -s  https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/ | grep -o "4\.[0-9]" | sort | uniq'
       register: minorversions
     - name: Listing available minor versions
       debug:
@@ -49,7 +49,7 @@
       debug:
         msg: "You have manually selected ocpversion: {{ ocpversion }}"
     - name: Grabbing available versions list
-      shell: 'for i in 4.1 4.2 4.3 4.4 ; do curl -s  https://mirror.openshift.com/pub/openshift-v4/clients/ocp/ | grep -w \"$i | egrep -o "4\.[0-9]\.[0-9]|4\.[0-9]\.[0-9][0-9]" | uniq ; done'
+      shell: 'for i in 4.1 4.2 4.3 4.4 4.5 4.6 ; do curl -s  https://mirror.openshift.com/pub/openshift-v4/clients/ocp/ | grep -w \"$i | egrep -o "4\.[0-9]\.[0-9]|4\.[0-9]\.[0-9][0-9]" | uniq ; done'
       register: versions
     - name: Checking selected version
       block:

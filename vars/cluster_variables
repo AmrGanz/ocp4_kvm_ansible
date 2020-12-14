@@ -13,7 +13,7 @@ master_cpu: 4
 master_mem: 16384
 master_disk: 50
 #=========================================================
-worker_count: 0
+worker_count: 2
 worker_cpu: 4
 worker_mem: 16384
 worker_disk: 50

@@ -14,6 +14,8 @@
 - OCP 4.3.13
 - OCP 4.4.3
 - OCP 4.4.5
+- OCP 4.4.23
+- OCP 4.5.9
 
 # What do you have to do beforehand:
 - The playbooks will try to download everything that you will need under projects directoy and "/var/www/html/downloads/"
@@ -30,11 +32,11 @@
 - libvirt-daemon-driver-network
 - virt-manager
 ```
-- And ofcousre you will need to install Ansible on the bastion host :)
+- And of cousre you will need to install Ansible on the bastion host :)
 
 # Variables to set before starting the playbook:
 
-- Variables that you need to be set:
+- Variables that you need to be set in vars/cluster_variables:
 ```
 # Pull secret, it can be grabbed from here "https://cloud.redhat.com/openshift/install/metal/user-provisioned":
 pullsecret: 'PASTE HERE'

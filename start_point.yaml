@@ -19,8 +19,8 @@
       tags: versions
 
     - name: "[TASK4] Install/enable required packages/services"
-      import_tasks: tasks/prerequistes.yaml
-      tags: prerequistes
+      import_tasks: tasks/prerequisites.yaml
+      tags: prerequisites
 
     - name: "[TASK5] Download required files"
       import_tasks: tasks/download.yaml
